@@ -25,18 +25,18 @@ class TeaControlSkill(MycroftSkill):
         
         # Initialize working variables used within the skill.
         self.CE_status = -1
-        self.ser = 0
+        self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.gas_level = 0
         self.rpm = 0
 
+        self.ser.write(b'pinmode A0 INPUT\n')
+        self.ser.write(b'pinmode A1 INPUT\n')
+
+
     @intent_handler(IntentBuilder("").require("CheckEngine"))
     def handle_check_eng_intent(self, message):
-        # if message.data["CEStatus"] == "on":
-        #     self.led_status = "on"
-        # else:  # assume "down"
-        #     self.led_status = "off"
-        # self.speak_dialog("led.toggle", data={"status": self.led_status})
-        self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
+
+        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
 
         self.ser.write(b'digitalread 13\n')
 
@@ -49,64 +49,42 @@ class TeaControlSkill(MycroftSkill):
 
         self.speak_dialog('ce.status', data={'status': self.CE_status})
 
-        self.ser.close()
-
-    #@intent_handler(IntentBuilder("").require("CheckEngine").require("OnOff"))
-    #def handle_check_eng_set_intent(self, message):
-        # if message.data["CEStatus"] == "on":
-        #     self.led_status = "on"
-        # else:  # assume "down"
-        #     self.led_status = "off"
-        # self.speak_dialog("led.toggle", data={"status": self.led_status})
-        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
-        
-        # self.ser.write(b'digitalwrite 13\n')
-
-        #stat = self.ser.read(1)
-
-        #if stat.decode('utf-8') is '1':
-        #    self.CE_status = 'on'
-        #elif stat.decode('utf-8') is '0':
-        #    self.CE_status = 'off'
-
-        #self.speak_dialog('ce.status', data={'status': self.CE_status})
-
-        # self.ser.close()
+        #self.ser.close()
 
     @intent_handler(IntentBuilder("").require("GasLevel"))
     def handle_gas_level_intent(self, message):
 
-        self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
+        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         
         self.ser.write(b'analogread A0\n')
 
         stat = self.ser.read(4)
 
-        self.gas_level = int(stat.decode('utf-8'))
+        self.gas_level = int(stat.decode('utf-8').split[0])
 
-        self.speak_dialog('gas.level', data={'level': self.gas_level/1024})
+        self.speak_dialog('gas.level', data={'level': round(100*(self.gas_level/1024))})
 
-        self.ser.close()
+        #self.ser.close()
 
     @intent_handler(IntentBuilder("").require("RPMRead"))
     def handle_rpm_read_intent(self, message):
 
-        self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
+        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         
         self.ser.write(b'analogread A1\n')
 
         stat = self.ser.read(4)
 
-        self.rpm = int(stat.decode('utf-8'))
+        self.rpm = int(stat.decode('utf-8').split[0])
 
         self.speak_dialog('rpm.read', data={'measure': self.rpm * 1000})
 
-        self.ser.close()
+        #self.ser.close()
 
-    def stop(self):
-        if (self.ser.isOpen()):
-            self.ser.close()
-        return True
+    #def stop(self):
+    #    if (self.ser.isOpen()):
+    #        self.ser.close()
+    #    return True
 
 # The "create_skill()" method is used to create an instance of the skill.
 # Note that it's outside the class itself.
