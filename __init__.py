@@ -32,10 +32,10 @@ class TeaControlSkill(MycroftSkill):
         self.pressure = 0
         self.inf = inflect.engine()
 
-    @intent_handler(IntentBuilder('').require('CheckEngine').optionally("OnOff"))
+    @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
     def handle_check_eng_intent(self, message):
 
-        on_off = message.data.get("OnOff")
+        on_off = message.data['OnOff']
 
         self.ser.reset_input_buffer()
         if not on_off:
@@ -50,7 +50,7 @@ class TeaControlSkill(MycroftSkill):
         else:
             self.ser.write('checkengine_light {}\n'.format(on_off).encode())
             self.CE_status = on_off
-            self.speak('Check engine light set to {}'.foramt(on_off))
+            self.speak('Check engine light set to {}'.format(on_off))
 
         self.speak_dialog('ce.status', data={'status': self.CE_status})
 
@@ -83,7 +83,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('WhichTire').require('TirePressure'))
     def handle_tire_pressure_intent(self, message):
 
-        tire_string = message.data.get('WhichTire')
+        tire_string = message.data['WhichTire']
         which_tire = 'A2' if tire_string is 'left' else 'A3'
         
         self.ser.reset_input_buffer()
