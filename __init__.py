@@ -32,30 +32,25 @@ class TeaControlSkill(MycroftSkill):
         self.pressure = 0
         self.inf = inflect.engine()
 
-    @intent_handler(IntentBuilder('').require('CheckEngine'))
+    @intent_handler(IntentBuilder('').require('CheckEngine').optionally("OnOff"))
     def handle_check_eng_intent(self, message):
 
-        self.ser.reset_input_buffer()
-        self.ser.write(b'checkengine_status\n')
-
-        stat = self.ser.read(1)
-
-        if stat.decode('utf-8') is '1':
-            self.CE_status = 'on'
-        elif stat.decode('utf-8') is '0':
-            self.CE_status = 'off'
-
-        self.speak_dialog('ce.status', data={'status': self.CE_status})
-    
-    @intent_handler(IntentBuilder('').require('CheckEngineSet').require('OnOff'))
-    def handle_check_eng_set_intent(self, message):
-
-        on_off = message.data.get('OnOff')
+        on_off = message.data.get("OnOff")
 
         self.ser.reset_input_buffer()
-        self.ser.write('checkengine_light {}\n'.format(on_off).encode())
+        if not on_off:
+            self.ser.write(b'checkengine_status\n')
 
-        self.CE_status = on_off
+            stat = self.ser.read(1)
+
+            if stat.decode('utf-8') is '1':
+                self.CE_status = 'on'
+            elif stat.decode('utf-8') is '0':
+                self.CE_status = 'off'
+        else:
+            self.ser.write('checkengine_light {}\n'.format(on_off).encode())
+            self.CE_status = on_off
+            self.speak('Check engine light set to {}'.foramt(on_off))
 
         self.speak_dialog('ce.status', data={'status': self.CE_status})
 
