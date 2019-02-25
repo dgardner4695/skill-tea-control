@@ -33,7 +33,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_check_eng_intent(self, message):
 
         #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
-
+        self.ser.reset_input_buffer()
         self.ser.write(b'digitalread 13\n')
 
         stat = self.ser.read(1)
@@ -51,7 +51,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_gas_level_intent(self, message):
 
         #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
-        
+        self.ser.reset_input_buffer()
         self.ser.write(b'analogread A0\n')
 
         stat = self.ser.read(4)
@@ -67,6 +67,7 @@ class TeaControlSkill(MycroftSkill):
 
         #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         
+        self.ser.reset_input_buffer()
         self.ser.write(b'analogread A1\n')
 
         stat = self.ser.read(4)
