@@ -11,6 +11,7 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
 import serial
+import inflect
 import time
 
 # Each skill is contained within its own class, which inherits base methods
@@ -28,13 +29,14 @@ class TeaControlSkill(MycroftSkill):
         self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.gas_level = 0
         self.rpm = 0
+        self.inf = inflect.engine()
 
     @intent_handler(IntentBuilder("").require("CheckEngine"))
     def handle_check_eng_intent(self, message):
 
         #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.ser.reset_input_buffer()
-        self.ser.write(b'digitalread 13\n')
+        self.ser.write(b'checkengine_status\n')
 
         stat = self.ser.read(1)
 
@@ -56,9 +58,10 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.ser.read(4)
 
-        self.gas_level = int(stat.decode('utf-8').split()[0])
+        gas_int = stat.decode('utf-8').split()[0]
+        self.gas_level = inf.number_to_words(round(100*(gas_int/1024)))
 
-        self.speak_dialog('gas.level', data={'level': round(100*(self.gas_level/1024))})
+        self.speak_dialog('gas.level', data={'level': self.gas_level})
 
         #self.ser.close()
 
@@ -72,9 +75,10 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.ser.read(4)
 
-        self.rpm = int(stat.decode('utf-8').split()[0])
+        rpm_int = stat.decode('utf-8').split()[0]
+        self.rpm = inf.number_to_words(rpm_int * 1000)
 
-        self.speak_dialog('rpm.read', data={'measure': self.rpm * 1000})
+        self.speak_dialog('rpm.read', data={'measure': self.rpm})
 
         #self.ser.close()
 
