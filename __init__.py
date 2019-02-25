@@ -84,7 +84,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_tire_pressure_intent(self, message):
 
         tire_string = message.data['WhichTire']
-        which_tire = 'A2' if tire_string is 'left' else 'A3'
+        which_tire = 'A2' if tire_string == 'left' else 'A3'
         
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
