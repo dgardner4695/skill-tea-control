@@ -92,7 +92,7 @@ class TeaControlSkill(MycroftSkill):
         stat = self.ser.read(4)
 
         pressure_int = int(stat.decode('utf-8').split()[0])
-        self.pressure = self.inf.number_to_words((pressure_int / 1024) * 35)
+        self.pressure = self.inf.number_to_words(round((pressure_int / 1024) * 35))
 
         self.speak_dialog('tire.pressure', data={'whichtire': tire_string, 'pressure': self.pressure})
 
