@@ -56,7 +56,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.ser.read(4)
 
-        self.gas_level = int(stat.decode('utf-8').split[0])
+        self.gas_level = int(stat.decode('utf-8').split()[0])
 
         self.speak_dialog('gas.level', data={'level': round(100*(self.gas_level/1024))})
 
@@ -71,7 +71,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.ser.read(4)
 
-        self.rpm = int(stat.decode('utf-8').split[0])
+        self.rpm = int(stat.decode('utf-8').split()[0])
 
         self.speak_dialog('rpm.read', data={'measure': self.rpm * 1000})
 
