@@ -53,7 +53,7 @@ class TeaControlSkill(MycroftSkill):
         on_off = message.data.get('OnOff')
 
         self.ser.reset_input_buffer()
-        self.ser.write(b'checkengine_light {}\n'.format(on_off))
+        self.ser.write('checkengine_light {}\n'.format(on_off).encode())
 
         self.CE_status = on_off
 
@@ -92,7 +92,7 @@ class TeaControlSkill(MycroftSkill):
         which_tire = 'A2' if tire_string is 'left' else 'A3'
         
         self.ser.reset_input_buffer()
-        self.ser.write(b'analogread {}\n'.format(which_tire))
+        self.ser.write('analogread {}\n'.format(which_tire).encode())
 
         stat = self.ser.read(4)
 
