@@ -25,7 +25,7 @@ class TeaControlSkill(MycroftSkill):
         
         # Initialize working variables used within the skill.
         self.CE_status = -1
-        self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
+        self.ser = serial.Serial('/dev/serial1', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.gas_level = 0
         self.rpm = 0
 
