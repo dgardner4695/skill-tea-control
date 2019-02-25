@@ -22,19 +22,19 @@ class TeaControlSkill(MycroftSkill):
 
     # The constructor of the skill, which calls MycroftSkill's constructor
     def __init__(self):
-        super(TeaControlSkill, self).__init__(name="TeaControlSkill")
+        super(TeaControlSkill, self).__init__(name='TeaControlSkill')
         
         # Initialize working variables used within the skill.
         self.CE_status = -1
         self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.gas_level = 0
         self.rpm = 0
+        self.pressure = 0
         self.inf = inflect.engine()
 
-    @intent_handler(IntentBuilder("").require("CheckEngine"))
+    @intent_handler(IntentBuilder('').require('CheckEngine'))
     def handle_check_eng_intent(self, message):
 
-        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.ser.reset_input_buffer()
         self.ser.write(b'checkengine_status\n')
 
@@ -46,13 +46,22 @@ class TeaControlSkill(MycroftSkill):
             self.CE_status = 'off'
 
         self.speak_dialog('ce.status', data={'status': self.CE_status})
+    
+    @intent_handler(IntentBuilder('').require('CheckEngineSet').require('OnOff'))
+    def handle_check_eng_set_intent(self, message):
 
-        #self.ser.close()
+        on_off = message.data.get('OnOff')
 
-    @intent_handler(IntentBuilder("").require("GasLevel"))
+        self.ser.reset_input_buffer()
+        self.ser.write(b'checkengine_light {}\n'.format(on_off))
+
+        self.CE_status = on_off
+
+        self.speak_dialog('ce.status', data={'status': self.CE_status})
+
+    @intent_handler(IntentBuilder('').require('GasLevel'))
     def handle_gas_level_intent(self, message):
 
-        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.ser.reset_input_buffer()
         self.ser.write(b'analogread A0\n')
 
@@ -63,12 +72,8 @@ class TeaControlSkill(MycroftSkill):
 
         self.speak_dialog('gas.level', data={'level': self.gas_level})
 
-        #self.ser.close()
-
-    @intent_handler(IntentBuilder("").require("RPMRead"))
+    @intent_handler(IntentBuilder('').require('RPMRead'))
     def handle_rpm_read_intent(self, message):
-
-        #self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
         
         self.ser.reset_input_buffer()
         self.ser.write(b'analogread A1\n')
@@ -80,12 +85,26 @@ class TeaControlSkill(MycroftSkill):
 
         self.speak_dialog('rpm.read', data={'measure': self.rpm})
 
-        #self.ser.close()
+    @intent_handler(IntentBuilder('').require('WhichTire').require('TirePressure'))
+    def handle_tire_pressure_intent(self, message):
 
-    #def stop(self):
-    #    if (self.ser.isOpen()):
-    #        self.ser.close()
-    #    return True
+        tire_string = message.data.get('WhichTire')
+        which_tire = 'A2' if tire_string is 'left' else 'A3'
+        
+        self.ser.reset_input_buffer()
+        self.ser.write(b'analogread {}\n'.format(which_tire))
+
+        stat = self.ser.read(4)
+
+        pressure_int = int(stat.decode('utf-8').split()[0])
+        self.pressure = self.inf.number_to_words(pressure_int % 35)
+
+        self.speak_dialog('tire.pressure', data={'whichtire': tire_string, 'pressure': self.pressure})
+
+    def stop(self):
+        if (self.ser.isOpen()):
+            self.ser.close()
+        return True
 
 # The "create_skill()" method is used to create an instance of the skill.
 # Note that it's outside the class itself.
