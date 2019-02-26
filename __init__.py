@@ -107,7 +107,7 @@ class TeaControlSkill(MycroftSkill):
 
         self.speak_dialog('tire.pressure', data={'whichtire': tire_string, 'pressure': self.pressure})
 
-    @intent_handler(IntentBuilder('').require('Headlights').require('OnOff'))
+    @intent_handler(IntentBuilder('').require('HeadlightControl').require('OnOff'))
     def handle_headlight_intent(self, message):
 
         on_off = message.data['OnOff']
