@@ -108,7 +108,7 @@ class TeaControlSkill(MycroftSkill):
         self.speak_dialog('tire.pressure', data={'whichtire': tire_string, 'pressure': self.pressure})
 
     @intent_handler(IntentBuilder('').require('HeadlightControl').require('OnOff'))
-    def handle_headlight_intent(self, message):
+    def handle_headlightcontrol_intent(self, message):
 
         on_off = message.data['OnOff']
         
@@ -128,7 +128,7 @@ class TeaControlSkill(MycroftSkill):
         self.speak_dialog('window.adjust', data={'state': open_close})
 
     @intent_handler(IntentBuilder('').require('LockCheck'))
-    def handle_headlight_intent(self, message):
+    def handle_lockcheck_intent(self, message):
         
         self.ser.reset_input_buffer()
         self.ser.write(b'digitalread 12\n')
