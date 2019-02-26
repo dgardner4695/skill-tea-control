@@ -30,7 +30,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
     def handle_check_eng_intent(self, message):
 
-        if 'OnOff' in message.data.keys():
+        if 'OnOff' in message.data:
             on_off = message.data['OnOff']
         else:
             on_off = None
