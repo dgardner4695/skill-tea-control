@@ -87,7 +87,7 @@ class TeaControlSkill(MycroftSkill):
         stat = self.ser.read(4)
 
         temp_int = int(stat.decode('utf-8').split()[0])
-        self.engine_temp = self.inf.number_to_words(round(temp_int / 1024) * 100)
+        self.engine_temp = self.inf.number_to_words(round((temp_int / 1024) * 100))
 
         self.speak_dialog('engine.temp', data={'measure': self.engine_temp})
 
