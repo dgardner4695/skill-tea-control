@@ -135,7 +135,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.ser.read(1)
 
-        if stat == '1':
+        if stat.decode('utf-8') == '1':
             self.locked = 'locked'
         else:
             self.locked = 'unlocked'
