@@ -27,6 +27,15 @@ class TeaControlSkill(MycroftSkill):
         self.engine_temp = 50
         self.inf = inflect.engine()
 
+    def read_until_prompt(self):
+        response = ''
+        while True:
+            response += self.ser.read()
+            if 'm3>' in response:
+                return response.decode('utf-8').split()[0]
+            elif 'ERROR' in response:
+                return 0
+
     @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
     def handle_check_eng_intent(self, message):
 
@@ -39,11 +48,15 @@ class TeaControlSkill(MycroftSkill):
         if on_off is None:
             self.ser.write(b'checkengine_status\n')
 
-            stat = self.ser.read(1)
+            stat = read_until_prompt()
 
-            if stat.decode('utf-8') == '1':
+            if not stat:
+                self.speak_dialog('error')
+                return
+
+            if stat == '1':
                 self.CE_status = 'on'
-            elif stat.decode('utf-8') == '0':
+            elif stat == '0':
                 self.CE_status = 'off'
         else:
             self.ser.write('checkengine_light {}\n'.format(on_off).encode())
@@ -58,10 +71,13 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'analogread A0\n')
 
-        stat = self.ser.read(4)
+        stat = read_until_prompt()
 
-        gas_int = int(stat.decode('utf-8').split()[0])
-        self.gas_level = self.inf.number_to_words(round(100*(gas_int/1024)))
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        self.gas_level = self.inf.number_to_words(stat)
 
         self.speak_dialog('gas.level', data={'level': self.gas_level})
 
@@ -69,12 +85,15 @@ class TeaControlSkill(MycroftSkill):
     def handle_rpm_read_intent(self, message):
         
         self.ser.reset_input_buffer()
-        self.ser.write(b'analogread A1\n')
+        self.ser.write(b'show_pid 0c\n')
 
-        stat = self.ser.read(4)
+        stat = read_until_prompt()
 
-        rpm_int = int(stat.decode('utf-8').split()[0])
-        self.rpm = self.inf.number_to_words(rpm_int * 1000)
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        self.rpm = self.inf.number_to_words(stat)
 
         self.speak_dialog('rpm.read', data={'measure': self.rpm})
 
@@ -84,10 +103,13 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'analogread A4\n')
 
-        stat = self.ser.read(4)
+        stat = read_until_prompt()
 
-        temp_int = int(stat.decode('utf-8').split()[0])
-        self.engine_temp = self.inf.number_to_words(round((temp_int / 1024) * 100))
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        self.engine_temp = self.inf.number_to_words(stat)
 
         self.speak_dialog('engine.temp', data={'measure': self.engine_temp})
 
@@ -100,10 +122,13 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
 
-        stat = self.ser.read(4)
+        stat = read_until_prompt()
 
-        pressure_int = int(stat.decode('utf-8').split()[0])
-        self.pressure = self.inf.number_to_words(round((pressure_int / 1024) * 35))
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        self.pressure = self.inf.number_to_words(stat)
 
         self.speak_dialog('tire.pressure', data={'whichtire': tire_string, 'pressure': self.pressure})
 
@@ -133,14 +158,82 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'digitalread 12\n')
 
-        stat = self.ser.read(1)
+        stat = read_until_prompt()
 
-        if stat.decode('utf-8') == '1':
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        if stat == '1':
             self.locked = 'locked'
         else:
             self.locked = 'unlocked'
 
         self.speak_dialog('locked.unlocked', data={'state': self.locked})
+
+    @intent_handler(IntentBuilder('').require('EngineLoad'))
+    def handle_tire_pressure_intent(self, message):
+        
+        self.ser.reset_input_buffer()
+        self.ser.write('analogread {}\n'.format(which_tire).encode())
+
+        stat = read_until_prompt()
+
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        load_percent = self.inf.number_to_words(stat)
+
+        self.speak_dialog('engine.load', data={'percent': load_percent})
+
+    @intent_handler(IntentBuilder('').require('EngineLoad'))
+    def handle_engine_load_intent(self, message):
+        
+        self.ser.reset_input_buffer()
+        self.ser.write('analogread {}\n'.format(which_tire).encode())
+
+        stat = read_until_prompt()
+
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        load_percent = self.inf.number_to_words(stat)
+
+        self.speak_dialog('engine.load', data={'percent': load_percent})
+
+    @intent_handler(IntentBuilder('').require('FreezeDTC'))
+    def handle_freeze_dtc_intent(self, message):
+        
+        self.ser.reset_input_buffer()
+        self.ser.write('analogread {}\n'.format(which_tire).encode())
+
+        stat = read_until_prompt()
+
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        # freeze_dtc_code = self.inf.number_to_words(stat)
+
+        self.speak_dialog('freeze.dtc', data={'dtc': stat})
+
+    @intent_handler(IntentBuilder('').require('VehicleSpeed'))
+    def handle_vehicle_speed_intent(self, message):
+        
+        self.ser.reset_input_buffer()
+        self.ser.write('analogread {}\n'.format(which_tire).encode())
+
+        stat = read_until_prompt()
+
+        if not stat:
+            self.speak_dialog('error')
+            return
+
+        speed_kmh = self.inf.number_to_words(stat)
+
+        self.speak_dialog('vehicle.speed', data={'kmh': speed_kmh})
 
     def stop(self):
         if (self.ser.isOpen()):
