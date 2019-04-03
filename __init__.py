@@ -19,7 +19,7 @@ class TeaControlSkill(MycroftSkill):
         
         # Initialize working variables used within the skill.
         self.CE_status = 'off'
-        self.ser = serial.Serial('/dev/serial0', baudrate=115200, dsrdtr=False, timeout=0.25)
+        self.ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, dsrdtr=False, timeout=0.25)
         self.gas_level = 0
         self.rpm = 0
         self.pressure = 0
@@ -48,7 +48,7 @@ class TeaControlSkill(MycroftSkill):
         if on_off is None:
             self.ser.write(b'checkengine_status\n')
 
-            stat = read_until_prompt()
+            stat = self.read_until_prompt()
 
             if not stat:
                 self.speak_dialog('error')
@@ -71,7 +71,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'analogread A0\n')
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -87,7 +87,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'show_pid 0c\n')
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -103,7 +103,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'analogread A4\n')
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -122,7 +122,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -158,7 +158,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write(b'digitalread 12\n')
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -177,7 +177,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -193,7 +193,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -209,7 +209,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
@@ -225,7 +225,7 @@ class TeaControlSkill(MycroftSkill):
         self.ser.reset_input_buffer()
         self.ser.write('analogread {}\n'.format(which_tire).encode())
 
-        stat = read_until_prompt()
+        stat = self.read_until_prompt()
 
         if not stat:
             self.speak_dialog('error')
