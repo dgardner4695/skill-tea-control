@@ -30,9 +30,9 @@ class TeaControlSkill(MycroftSkill):
     def read_until_prompt(self):
         response = ''
         while True:
-            response += self.ser.read()
+            response += self.ser.read().decode('utf-8')
             if 'm3>' in response:
-                return response.decode('utf-8').split()[0]
+                return response.split()[0]
             elif 'ERROR' in response:
                 return 0
 
