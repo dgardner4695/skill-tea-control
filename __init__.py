@@ -32,7 +32,8 @@ class TeaControlSkill(MycroftSkill):
         while True:
             response += self.ser.read().decode('utf-8')
             if 'm3>' in response:
-                return response.split()[0]
+                print(response)
+                return response.split()[1]
             elif 'ERROR' in response:
                 return 0
 
@@ -171,7 +172,7 @@ class TeaControlSkill(MycroftSkill):
 
         self.speak_dialog('locked.unlocked', data={'state': self.locked})
 
-    @intent_handler(IntentBuilder('').require('EngineLoad'))
+    @intent_handler(IntentBuilder('').require('TirePressure'))
     def handle_tire_pressure_intent(self, message):
         
         self.ser.reset_input_buffer()
@@ -191,7 +192,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_engine_load_intent(self, message):
         
         self.ser.reset_input_buffer()
-        self.ser.write('analogread {}\n'.format(which_tire).encode())
+        self.ser.write('show_pid 04\n'.encode())
 
         stat = self.read_until_prompt()
 
@@ -223,7 +224,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_vehicle_speed_intent(self, message):
         
         self.ser.reset_input_buffer()
-        self.ser.write('analogread {}\n'.format(which_tire).encode())
+        self.ser.write('show_pid 0d\n'.encode())
 
         stat = self.read_until_prompt()
 
