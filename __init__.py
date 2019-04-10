@@ -151,7 +151,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('VehicleSpeed'))
     def handle_vehicle_speed_intent(self, message):
 
-        stat = self.read_until_prompt('0d')
+        stat = self.read_until_prompt(b'show_pid 0d\n')
 
         if stat <= 0:
             self.speak_dialog('tea.error')
