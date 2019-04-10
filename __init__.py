@@ -43,13 +43,13 @@ class TeaControlSkill(MycroftSkill):
                 result = response.split()[0]
                 break
             elif 'SPI bus timeout' in response:
-                result = -1
+                result = None
                 retry += 1
                 if retry > 1:
                     break
                 continue
             elif len(response) == 0:
-                result = 0
+                result = None
                 break
 
         return result
@@ -67,7 +67,7 @@ class TeaControlSkill(MycroftSkill):
 
             stat = self.read_until_prompt(b'show_pid 01\n')
 
-            if stat <= 0:
+            if stat is None:
                 self.speak_dialog('tea.error')
                 return
 
@@ -85,7 +85,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt(b'show_pid 2f\n')
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
@@ -98,7 +98,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt(b'show_pid 0c\n')
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
@@ -111,7 +111,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt(b'show_pid 05\n')
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
@@ -124,7 +124,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt(b'show_pid 04\n')
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
@@ -140,7 +140,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt()
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
@@ -153,7 +153,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt(b'show_pid 0d\n')
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
@@ -167,7 +167,7 @@ class TeaControlSkill(MycroftSkill):
         stat_VSS = self.read_until_prompt(b'show_pid 0d\n')
         stat_MAF = self.read_unitl_prompt(b'show_pid 10\n')
 
-        if stat_VSS <= 0 or int(stat_MAF) <= 0:
+        if stat_VSS is None or stat_MAF is None or float(stat_MAF) <= 0:
             self.speak_dialog('tea.error')
             return
 
@@ -180,7 +180,7 @@ class TeaControlSkill(MycroftSkill):
 
         stat = self.read_until_prompt(b'show_pid 1f\n')
 
-        if stat <= 0:
+        if stat is None:
             self.speak_dialog('tea.error')
             return
 
