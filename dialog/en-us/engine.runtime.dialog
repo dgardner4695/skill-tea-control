@@ -1,0 +1,3 @@
+Engine has been running for {{time_s}} seconds
+{{time_s}} seconds
+Car has been on for {{time_s}} seconds
