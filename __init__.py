@@ -6,7 +6,7 @@ from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
 import socket
 import select
-import utils.parseelm
+import parselm
 import inflect
 import time
 
