@@ -19,7 +19,7 @@ class TeaControlSkill(MycroftSkill):
         
         # Initialize working variables used within the skill.
         self.CE_status = 'off'
-        self.ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, dsrdtr=False, timeout=1)
+        self.ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, dsrdtr=False, timeout=2)
         self.gas_level = 0
         self.rpm = 0
         self.pressure = 0
@@ -30,28 +30,29 @@ class TeaControlSkill(MycroftSkill):
     def read_until_prompt(self, command):
 
         ### Do SEND
+        self.ser.reset_input_buffer()
         self.ser.write(command)
 
         response = ''
         retry = 0
 
         while True:
-            response = '' if retry else response
-
             response += self.ser.read().decode('utf-8')
             if 'm3>' in response:
-                result = response.split()[0]
+                if 'SPI bus timeout' in response:
+                    result = None
+                    response = ''
+                    retry += 1
+                    if retry > 1:
+                        break
+                    self.ser.reset_input_buffer()
+                    self.ser.write(command)
+                    continue
+                result = response.split()[1]
                 break
-            elif 'SPI bus timeout' in response:
-                result = None
-                retry += 1
-                if retry > 1:
-                    break
-                continue
             elif len(response) == 0:
                 result = None
                 break
-
         return result
 
     @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
@@ -165,7 +166,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_fuel_economy_intent(self, message):
 
         stat_VSS = self.read_until_prompt(b'show_pid 0d\n')
-        stat_MAF = self.read_unitl_prompt(b'show_pid 10\n')
+        stat_MAF = self.read_until_prompt(b'show_pid 10\n')
 
         if stat_VSS is None or stat_MAF is None or float(stat_MAF) <= 0:
             self.speak_dialog('tea.error')
