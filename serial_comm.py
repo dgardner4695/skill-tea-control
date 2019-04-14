@@ -142,7 +142,7 @@ class SerialComm(object):
 				reader, writer = await asyncio.open_connection(sock=conn)
 				def callback(resp):
 					writer.write(resp)
-					writer.write(b'\0')
+					#writer.write(b'\0')
 					return writer.drain()
 				while True:
 					cmd = await reader.readuntil(b'\n')

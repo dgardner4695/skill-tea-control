@@ -18,7 +18,9 @@ def tokenized(lines):
 				yield stripped
 
 def parse_response(response, strict=True):
+	print(repr(response))
 	stripped = response.strip()
+	print(repr(stripped))
 	if not response:
 		raise ValueErorr(
 			"Unexpected empty response from ELM327. (note response was {})".format(repr(response))
@@ -78,7 +80,7 @@ def parse_multiline_response(tokens, resp, strict):
 				"Unexpected extra data after '>' in multiline response from elm327."
 				+ " (note response was {})".format(repr(resp))
 			)
-		elif line_number_str == '>':
+		elif line_number_str == '\0':
 			done = True
 			continue
 		elif not line_number_str or line_number_str[-1] != ':':

@@ -30,13 +30,11 @@ class TeaControlSkill(MycroftSkill):
         self.inf = inflect.engine()
 
     def send_recv_obd(self, command):
-        ret = None
         ### Do SEND
         self.comm.send(command)
         resp = self.comm.recv(1024)
-        ret = list(parseelm.parse_response(resp.decode('utf-8')))
 
-        return ret
+        return list(parseelm.parse_response(resp.decode('utf-8')))
 
     @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
     def handle_check_eng_intent(self, message):
@@ -80,6 +78,7 @@ class TeaControlSkill(MycroftSkill):
     def handle_rpm_read_intent(self, message):
 
         stat = self.send_recv_obd(b'010c\r\n')
+
         if stat is None:
             self.speak_dialog('tea.error')
             return
