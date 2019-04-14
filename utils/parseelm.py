@@ -17,7 +17,7 @@ def tokenized(lines):
 			if stripped:
 				yield stripped
 
-def parse_response(response):
+def parse_response(response, strict=True):
 	stripped = response.strip()
 	if not response:
 		raise ValueErorr(
@@ -29,26 +29,26 @@ def parse_response(response):
 		fmt = "Expected at least one carriage return in response from ELM327. (note response was {})"
 		raise ValueError(fmt.format(repr(response)))
 	if response[0] == '4':
-		yield from parse_single_line_response(tokenized(lines), response)
+		yield from parse_single_line_response(tokenized(lines), response, strict)
 	elif response[0] == '0':
-		yield from parse_multiline_response(tokenized(lines), response)
+		yield from parse_multiline_response(tokenized(lines), response, strict)
 	else:
 		raise ValueError(
 			"Expected '0' (multiline) or '4' (single line) as first character in response"
 			+ " but got {} instead.  (note response was {})".format(repr(response[0]), repr(response))
 		)
 
-def parse_single_line_response(tokens, resp):
+def parse_single_line_response(tokens, resp, strict):
 	assert resp and resp[0] == '4'
 	ended_line = False
 	got_chevron = False
 	for t in tokens:
-		if ended_line and got_chevron:
+		if ended_line and got_chevron and strict:
 			raise ValueError(
 				"Unexpected extra token, {}, after '>' in single-line response from elm327. (note response was {})".format(repr(t), repr(resp))
 			)
 		elif ended_line:
-			if t != ">":
+			if t != ">" and strict:
 				raise ValueError(
 					"Expected '>' after newline in single-line response from elm327 but got '{}' instead.".format(repr(t))
 					+ " (note response was {})".format(repr(resp))
@@ -59,7 +59,7 @@ def parse_single_line_response(tokens, resp):
 		else:
 			yield int(t, 16)
 
-def parse_multiline_response(tokens, resp):
+def parse_multiline_response(tokens, resp, strict):
 	tokens = iter(tokens)
 	try:
 		expected_token_count = int(next(tokens), 16)
@@ -78,7 +78,7 @@ def parse_multiline_response(tokens, resp):
 				"Unexpected extra data after '>' in multiline response from elm327."
 				+ " (note response was {})".format(repr(resp))
 			)
-		if line_number_str == '>':
+		elif line_number_str == '>':
 			done = True
 			continue
 		elif not line_number_str or line_number_str[-1] != ':':
@@ -111,6 +111,8 @@ def parse_multiline_response(tokens, resp):
 				break
 			yield int(tok, 16)
 			token_count += 1
+		if break_again:
+			break
 		expected_line += 1
 		expected_line %= 16
 		
