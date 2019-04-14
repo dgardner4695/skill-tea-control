@@ -5,8 +5,7 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
 import socket
-import select
-import parselm
+import parseelm
 import inflect
 import time
 
@@ -31,16 +30,13 @@ class TeaControlSkill(MycroftSkill):
         self.inf = inflect.engine()
 
     def send_recv_obd(self, command):
-
+        ret = None
         ### Do SEND
         self.comm.send(command)
-        ready_sock = select.select([self.comm], [], [], timeout=1)
+        resp = self.comm.recv(1024)
+        ret = list(parseelm.parse_response(resp.decode('utf-8')))
 
-        if ready_sock[0]:
-            resp = self.comm.recv(1024)
-            return list(parseelm.parse_response(resp.decode()))
-
-        return None
+        return ret
 
     @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
     def handle_check_eng_intent(self, message):
@@ -52,7 +48,7 @@ class TeaControlSkill(MycroftSkill):
 
         if on_off is None:
 
-            stat = self.send_recv_obd(b'0101\n')
+            stat = self.send_recv_obd(b'0101\r\n')
 
             if stat is None:
                 self.speak_dialog('tea.error')
@@ -61,7 +57,7 @@ class TeaControlSkill(MycroftSkill):
             self.CE_status = 'on' if (stat[2] & 64) else 'off'
 
         else:
-            self.send_recv_obd(b'0400\n')
+            self.send_recv_obd(b'0400\r\n')
             self.CE_status = 'off'
             self.speak('Check engine light set to {}'.format(on_off))
 
@@ -70,7 +66,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('GasLevel'))
     def handle_gas_level_intent(self, message):
 
-        stat = self.send_recv_obd(b'012f\n')
+        stat = self.send_recv_obd(b'012f\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')
@@ -83,7 +79,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('RPMRead'))
     def handle_rpm_read_intent(self, message):
 
-        stat = self.send_recv_obd(b'010c\n')
+        stat = self.send_recv_obd(b'010c\r\n')
         if stat is None:
             self.speak_dialog('tea.error')
             return
@@ -96,7 +92,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('TempCheck'))
     def handle_engine_temp_intent(self, message):
 
-        stat = self.send_recv_obd(b'0105\n')
+        stat = self.send_recv_obd(b'0105\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')
@@ -109,7 +105,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('EngineLoad'))
     def handle_engine_load_intent(self, message):
 
-        stat = self.send_recv_obd(b'0104\n')
+        stat = self.send_recv_obd(b'0104\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')
@@ -122,7 +118,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('FreezeDTC'))
     def handle_freeze_dtc_intent(self, message):
 
-        stat = self.send_recv_obd(b'0300\n')
+        stat = self.send_recv_obd(b'0300\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')
@@ -135,7 +131,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('VehicleSpeed'))
     def handle_vehicle_speed_intent(self, message):
 
-        stat = self.send_recv_obd(b'010d\n')
+        stat = self.send_recv_obd(b'010d\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')
@@ -148,8 +144,8 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('FuelEconomy'))
     def handle_fuel_economy_intent(self, message):
 
-        stat_VSS = self.send_recv_obd(b'010d\n')
-        stat_MAF = self.send_recv_obd(b'0110\n')
+        stat_VSS = self.send_recv_obd(b'010d\r\n')
+        stat_MAF = self.send_recv_obd(b'0110\r\n')
 
         if stat_VSS is None or stat_MAF is None:
             self.speak_dialog('tea.error')
@@ -168,7 +164,7 @@ class TeaControlSkill(MycroftSkill):
     @intent_handler(IntentBuilder('').require('EngineRuntime'))
     def handle_engine_runtime_intent(self, message):
 
-        stat = self.send_recv_obd(b'011f\n')
+        stat = self.send_recv_obd(b'011f\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')

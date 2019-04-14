@@ -79,7 +79,7 @@ class SerialComm(object):
 		# self.port = MockPort(
 		self.port = serial.Serial(
 			port='/dev/ttyUSB0',
-			baudrate=115200,
+			baudrate=38400,
 			dsrdtr=False,
 			write_timeout=0,
 			timeout=0
@@ -146,6 +146,7 @@ class SerialComm(object):
 					return writer.drain()
 				while True:
 					cmd = await reader.readuntil(b'\n')
+					print(cmd)
 					self.enqueue_command(cmd, callback)
 					await asyncio.sleep(0)
 
