@@ -5,6 +5,7 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
 import socket
+import subprocess
 import parseelm
 import inflect
 import time
@@ -52,7 +53,7 @@ class TeaControlSkill(MycroftSkill):
                 self.speak_dialog('tea.error')
                 return
 
-            self.CE_status = 'on' if (stat[3] & 0xf0) else 'off'
+            self.CE_status = 'on' if (stat[2] & 0xf0) else 'off'
 
         else:
             self.send_recv_obd(b'04\r\n')
@@ -185,6 +186,11 @@ class TeaControlSkill(MycroftSkill):
         time_s = self.inf.number_to_words((256 * stat[-2] + stat[-1]))
 
         self.speak_dialog('engine.runtime', data={'time_s': time_s})
+
+    @intent_handler(IntentBuilder('').require('Despacito'))
+    def handle_despacito_intent(self, message):
+
+        subprocess.call(['aplay', '/home/pi/capstone/mycroft-core/despacito.wav'])
 
     def stop(self):
         if (self.ser.isOpen()):
