@@ -52,7 +52,7 @@ class TeaControlSkill(MycroftSkill):
                 self.speak_dialog('tea.error')
                 return
 
-            self.CE_status = 'on' if (stat[2] & 0xf0) else 'off'
+            self.CE_status = 'on' if (stat[3] & 0xf0) else 'off'
 
         else:
             self.send_recv_obd(b'0400\r\n')
@@ -125,10 +125,10 @@ class TeaControlSkill(MycroftSkill):
         
         dtc = ''
         dtc += ['P', 'C', 'B', 'U'][stat[1] >> 6]
-        dtc += str((stat[1] >> 4) & 0x3)
-        dtc += format(stat[1] & 0x3, 'x')
-        dtc += format((stat[2] >> 4) & 0xf, 'x')
-        dtc += format(stat[2] & 0xf, 'x')
+        dtc += str((stat[2] >> 4) & 0x3)
+        dtc += format(stat[2] & 0x3, 'x')
+        dtc += format((stat[3] >> 4) & 0xf, 'x')
+        dtc += format(stat[3] & 0xf, 'x')
 
 
         self.speak_dialog('freeze.dtc', data={'dtc': dtc})
