@@ -22,7 +22,7 @@ def parse_response(response, strict=True):
 	stripped = response.strip()
 	print(repr(stripped))
 	if not response:
-		raise ValueErorr(
+		raise ValueError(
 			"Unexpected empty response from ELM327. (note response was {})".format(repr(response))
 		)
 	cleaned = response.replace("SEARCHING...", "")

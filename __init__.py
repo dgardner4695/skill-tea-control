@@ -34,7 +34,7 @@ class TeaControlSkill(MycroftSkill):
         self.comm.send(command)
         resp = self.comm.recv(1024)
 
-        return list(parseelm.parse_response(resp.decode('utf-8')))
+        return list(parseelm.parse_response(resp.decode('utf-8'), strict=False))
 
     @intent_handler(IntentBuilder('').require('CheckEngine').optionally('OnOff'))
     def handle_check_eng_intent(self, message):
@@ -52,7 +52,7 @@ class TeaControlSkill(MycroftSkill):
                 self.speak_dialog('tea.error')
                 return
 
-            self.CE_status = 'on' if (stat[2] & 64) else 'off'
+            self.CE_status = 'on' if (stat[2] & 0xf0) else 'off'
 
         else:
             self.send_recv_obd(b'0400\r\n')
@@ -70,7 +70,7 @@ class TeaControlSkill(MycroftSkill):
             self.speak_dialog('tea.error')
             return
 
-        self.gas_level = self.inf.number_to_words((100/255)*stat[-1])
+        self.gas_level = self.inf.number_to_words(int((100/255)*stat[-1]))
 
         self.speak_dialog('gas.level', data={'level': self.gas_level})
 
@@ -84,7 +84,7 @@ class TeaControlSkill(MycroftSkill):
             return
 
         rpm_read = (stat[-2]*256 + stat[-1])/4
-        self.rpm = self.inf.number_to_words(rpm_read)
+        self.rpm = self.inf.number_to_words(int(rpm_read))
 
         self.speak_dialog('rpm.read', data={'measure': self.rpm})
 
@@ -110,22 +110,28 @@ class TeaControlSkill(MycroftSkill):
             self.speak_dialog('tea.error')
             return
 
-        load_percent = self.inf.number_to_words((100/255)*stat[-1])
+        load_percent = self.inf.number_to_words(int((100/255)*stat[-1]))
 
         self.speak_dialog('engine.load', data={'percent': load_percent})
 
     @intent_handler(IntentBuilder('').require('FreezeDTC'))
     def handle_freeze_dtc_intent(self, message):
 
-        stat = self.send_recv_obd(b'0300\r\n')
+        stat = self.send_recv_obd(b'03\r\n')
 
         if stat is None:
             self.speak_dialog('tea.error')
             return
+        
+        dtc = ''
+        dtc += ['P', 'C', 'B', 'U'][stat[1] >> 6]
+        dtc += str((stat[1] >> 4) & 0x3)
+        dtc += format(stat[1] & 0x3, 'x')
+        dtc += format((stat[2] >> 4) & 0xf, 'x')
+        dtc += format(stat[2] & 0xf, 'x')
 
-        # freeze_dtc_code = self.inf.number_to_words(stat)
 
-        self.speak_dialog('freeze.dtc', data={'dtc': stat})
+        self.speak_dialog('freeze.dtc', data={'dtc': dtc})
 
     @intent_handler(IntentBuilder('').require('VehicleSpeed'))
     def handle_vehicle_speed_intent(self, message):
@@ -156,7 +162,7 @@ class TeaControlSkill(MycroftSkill):
         vss = stat_VSS[-1]
         maf = (256 * stat_MAF[-2] + stat_MAF[-1])/100 
 
-        econ = self.inf.number_to_words(710.7*vss/maf)
+        econ = self.inf.number_to_words(int(710.7*vss/maf))
 
         self.speak_dialog('fuel.economy', data={'mpg': econ})
 
