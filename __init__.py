@@ -55,7 +55,7 @@ class TeaControlSkill(MycroftSkill):
             self.CE_status = 'on' if (stat[3] & 0xf0) else 'off'
 
         else:
-            self.send_recv_obd(b'0400\r\n')
+            self.send_recv_obd(b'04\r\n')
             self.CE_status = 'off'
             self.speak('Check engine light set to {}'.format(on_off))
 
@@ -118,20 +118,27 @@ class TeaControlSkill(MycroftSkill):
     def handle_freeze_dtc_intent(self, message):
 
         stat = self.send_recv_obd(b'03\r\n')
+        dtc = []
 
         if stat is None:
             self.speak_dialog('tea.error')
             return
+
+        if len(stat) <= 3:
+            self.speak('No errors found')
+            return
         
-        dtc = ''
-        dtc += ['P', 'C', 'B', 'U'][stat[1] >> 6]
-        dtc += str((stat[2] >> 4) & 0x3)
-        dtc += format(stat[2] & 0x3, 'x')
-        dtc += format((stat[3] >> 4) & 0xf, 'x')
-        dtc += format(stat[3] & 0xf, 'x')
+        self.speak('The following error codes were found')
+        for i in range(int((len(stat)-2)/2)):
+            dtc.append('')
+            offset = 2*i
+            dtc[i] += ['P,', 'C,', 'B,', 'U,'][stat[2+offset] >> 6]
+            dtc[i] += str((stat[2+offset] >> 4) & 0x3) + ','
+            dtc[i] += format(stat[2+offset] & 0x3, 'x') + ','
+            dtc[i] += format((stat[3+offset] >> 4) & 0xf, 'x') + ','
+            dtc[i] += format(stat[3+offset] & 0xf, 'x')
+            self.speak(dtc[i])
 
-
-        self.speak_dialog('freeze.dtc', data={'dtc': dtc})
 
     @intent_handler(IntentBuilder('').require('VehicleSpeed'))
     def handle_vehicle_speed_intent(self, message):
@@ -160,7 +167,7 @@ class TeaControlSkill(MycroftSkill):
             return
         
         vss = stat_VSS[-1]
-        maf = (256 * stat_MAF[-2] + stat_MAF[-1])/100 
+        maf = (256 * stat_MAF[-2] + stat_MAF[-1])
 
         econ = self.inf.number_to_words(int(710.7*vss/maf))
 
